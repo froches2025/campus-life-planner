@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Validator Tests</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem;
+            background-color: #f9fafb;
+        }
+
+        h1 {
+            color: #111827;
+        }
+
+        .test-group {
+            background: white;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            border-radius: 0.375rem;
+            border: 1px solid #d1d5db;
+        }
+
+        .test-group h2 {
+            margin: 0 0 1rem 0;
+            font-size: 1.125rem;
+            color: #111827;
+            border-bottom: 2px solid #e5e7eb;
+            padding-bottom: 0.5rem;
+        }
+
+        .test-case {
+            margin-bottom: 0.75rem;
+            padding: 0.75rem;
+            border-radius: 0.375rem;
+            font-size: 0.875rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .test-case.pass {
+            background-color: #dcfce7;
+            border-left: 4px solid #38b000;
+        }
+
+        .test-case.fail {
+            background-color: #fee2e2;
+            border-left: 4px solid #dc2626;
+        }
+
+        .test-case.warn {
+            background-color: #fef3c7;
+            border-left: 4px solid #f59e0b;
+        }
+
+        .indicator {
+            font-weight: bold;
+            font-size: 1.25rem;
+            min-width: 1.5rem;
+        }
+
+        .pass .indicator {
+            color: #38b000;
+        }
+
+        .fail .indicator {
+            color: #dc2626;
+        }
+
+        .warn .indicator {
+            color: #f59e0b;
+        }
+
+        .test-detail {
+            flex: 1;
+        }
+
+        .test-label {
+            font-weight: 500;
+            color: #111827;
+        }
+
+        .test-input {
+            color: #6b7280;
+            font-family: monospace;
+            word-break: break-all;
+        }
+
+        .test-message {
+            color: #6b7280;
+            font-size: 0.75rem;
+            margin-top: 0.25rem;
+        }
+
+        .summary {
+            background: white;
+            padding: 1rem;
+            border-radius: 0.375rem;
+            border: 1px solid #d1d5db;
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+    <h1>Validator Test Suite</h1>
+    <div id="test-results"></div>
+    <div class="summary">
+        <p>Total: <span id="total">0</span> | Passed: <span id="passed">0</span> | Failed: <span id="failed">0</span></p>
+    </div>
+
+    <script type="module">
+        import {
+            validateTitle,
+            validateDuration,
+            validateDate,
+            validateTag,
+        } from './scripts/validators.js';
+
+        const testResults = document.getElementById('test-results');
+        let totalTests = 0;
+        let passedTests = 0;
+        let failedTests = 0;
+
+        function runTests() {
+            // title tests
+            const titleTests = [
+                {
+                    fieldName: 'title',
+                    input: 'Study Session',
+                    expectedValid: true,
+                    description: 'normal title',
+                },
+                {
+                    fieldName: 'title',
+                    input: ' Study Session',
+                    expectedValid: false,
+                    description: 'leading space (should fail)',
+                },
+                {
+                    fieldName: 'title',
+                    input: 'Study Study session',
+                    expectedValid: true,
+                    description: 'duplicate word (warns but passes)',
+                    expectWarning: true,
+                },
+                {
+                    fieldName: 'title',
+                    input: '',
+                    expectedValid: false,
+                    description: 'empty string',
+                },
+                {
+                    fieldName: 'title',
+                    input: 'A',
+                    expectedValid: true,
+                    description: 'single character',
+                },
+            ];
+
+            // duration tests
+            const durationTests = [
+                {
+                    fieldName: 'duration',
+                    input: '45',
+                    expectedValid: true,
+                    description: 'normal duration',
+                },
+                {
+                    fieldName: 'duration',
+                    input: 'abc',
+                    expectedValid: false,
+                    description: 'non-numeric',
+                },
+                {
+                    fieldName: 'duration',
+                    input: '0',
+                    expectedValid: true,
+                    description: 'zero (valid edge case)',
+                },
+                {
+                    fieldName: 'duration',
+                    input: '',
+                    expectedValid: false,
+                    description: 'empty string',
+                },
+                {
+                    fieldName: 'duration',
+                    input: '45.5',
+                    expectedValid: true,
+                    description: 'decimal (one place)',
+                },
+                {
+                    fieldName: 'duration',
+                    input: '45.123',
+                    expectedValid: false,
+                    description: 'too many decimal places',
+                },
+            ];
+
+            // date tests
+            const dateTests = [
+                {
+                    fieldName: 'date',
+                    input: '2025-06-17',
+                    expectedValid: true,
+                    description: 'normal date',
+                },
+                {
+                    fieldName: 'date',
+                    input: '2025-13-01',
+                    expectedValid: false,
+                    description: 'invalid month',
+                },
+                {
+                    fieldName: 'date',
+                    input: '2025-02-30',
+                    expectedValid: false,
+                    description: 'invalid date (passes regex, fails Date check)',
+                },
+                {
+                    fieldName: 'date',
+                    input: '',
+                    expectedValid: false,
+                    description: 'empty string',
+                },
+                {
+                    fieldName: 'date',
+                    input: '2025-01-01',
+                    expectedValid: true,
+                    description: 'first day of year',
+                },
+            ];
+
+            // tag tests
+            const tagTests = [
+                {
+                    fieldName: 'tag',
+                    input: 'Academics',
+                    expectedValid: true,
+                    description: 'simple tag',
+                },
+                {
+                    fieldName: 'tag',
+                    input: 'Academic123',
+                    expectedValid: false,
+                    description: 'tag with numbers',
+                },
+                {
+                    fieldName: 'tag',
+                    input: 'Self--Care',
+                    expectedValid: false,
+                    description: 'double hyphen (should fail)',
+                },
+                {
+                    fieldName: 'tag',
+                    input: '',
+                    expectedValid: false,
+                    description: 'empty string',
+                },
+                {
+                    fieldName: 'tag',
+                    input: 'Health Work',
+                    expectedValid: true,
+                    description: 'tag with space',
+                },
+                {
+                    fieldName: 'tag',
+                    input: 'Self-Care',
+                    expectedValid: true,
+                    description: 'tag with hyphen',
+                },
+            ];
+
+            const allTests = [
+                { name: 'validateTitle', tests: titleTests, validator: validateTitle },
+                { name: 'validateDuration', tests: durationTests, validator: validateDuration },
+                { name: 'validateDate', tests: dateTests, validator: validateDate },
+                { name: 'validateTag', tests: tagTests, validator: validateTag },
+            ];
+
+            // run all test groups
+            allTests.forEach(({ name, tests, validator }) => {
+                const groupDiv = document.createElement('div');
+                groupDiv.className = 'test-group';
+
+                const title = document.createElement('h2');
+                title.textContent = name;
+                groupDiv.appendChild(title);
+
+                tests.forEach((test) => {
+                    const result = validator(test.input);
+                    const testPassed = result.valid === test.expectedValid;
+                    const isWarning = test.expectWarning && result.valid && result.message;
+
+                    if (testPassed) {
+                        passedTests++;
+                    } else {
+                        failedTests++;
+                    }
+                    totalTests++;
+
+                    const caseDiv = document.createElement('div');
+                    let className = testPassed ? 'test-case pass' : 'test-case fail';
+                    if (isWarning) className = 'test-case warn';
+                    caseDiv.className = className;
+
+                    const indicator = document.createElement('span');
+                    indicator.className = 'indicator';
+                    indicator.textContent = testPassed ? '✓' : '✗';
+                    if (isWarning) indicator.textContent = '⚠';
+                    caseDiv.appendChild(indicator);
+
+                    const detail = document.createElement('div');
+                    detail.className = 'test-detail';
+
+                    const label = document.createElement('div');
+                    label.className = 'test-label';
+                    label.textContent = test.description;
+                    detail.appendChild(label);
+
+                    const input = document.createElement('div');
+                    input.className = 'test-input';
+                    input.textContent = `"${test.input}"`;
+                    detail.appendChild(input);
+
+                    if (result.message) {
+                        const message = document.createElement('div');
+                        message.className = 'test-message';
+                        message.textContent = result.message;
+                        detail.appendChild(message);
+                    }
+
+                    caseDiv.appendChild(detail);
+                    groupDiv.appendChild(caseDiv);
+                });
+
+                testResults.appendChild(groupDiv);
+            });
+
+            // update summary
+            document.getElementById('total').textContent = totalTests;
+            document.getElementById('passed').textContent = passedTests;
+            document.getElementById('failed').textContent = failedTests;
+        }
+
+        runTests();
+    </script>
+</body>
+</html>

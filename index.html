@@ -32,10 +32,74 @@
         </section>
         <section id="add-task" aria-labelledby="add-task-heading">
             <h2 id="add-task-heading">Add Task</h2>
-            <form action="submit" novalidate>
-                <label for="FIELD-ID">Field Name</label>
-                <input type="text" id="FIELD-ID" name="FIELD-NAME" autocomplete="off" aria-describedby="FIELD-ID-error" required />
-                <span id="FIELD-ID-error" class="error-message" aria-live="assertive" role="alert"></span>
+            <form id="task-form" novalidate>
+                <div class="form-group">
+                    <label for="task-title">Title</label>
+                    <input
+                        type="text"
+                        id="task-title"
+                        name="title"
+                        aria-invalid="false"
+                        aria-describedby="task-title-error"
+                        required
+                    />
+                    <span id="task-title-error" aria-live="assertive" role="alert"></span>
+                </div>
+
+                <div class="form-group">
+                    <label for="task-due-date">Due Date</label>
+                    <input
+                        type="text"
+                        id="task-due-date"
+                        name="dueDate"
+                        placeholder="YYYY-MM-DD"
+                        aria-invalid="false"
+                        aria-describedby="task-due-date-error"
+                        required
+                    />
+                    <span id="task-due-date-error" aria-live="assertive" role="alert"></span>
+                </div>
+
+                <div class="form-group">
+                    <label for="task-duration">Duration</label>
+                    <input
+                        type="text"
+                        id="task-duration"
+                        name="duration"
+                        placeholder="minutes"
+                        aria-invalid="false"
+                        aria-describedby="task-duration-error"
+                        required
+                    />
+                    <span id="task-duration-error" aria-live="assertive" role="alert"></span>
+                </div>
+
+                <div class="form-group">
+                    <label for="task-tag">Tag</label>
+                    <input
+                        type="text"
+                        id="task-tag"
+                        name="tag"
+                        list="tag-suggestions"
+                        aria-invalid="false"
+                        aria-describedby="task-tag-error"
+                        required
+                    />
+                    <datalist id="tag-suggestions">
+                        <option value="Academics"></option>
+                        <option value="Social"></option>
+                        <option value="Health"></option>
+                        <option value="Personal"></option>
+                        <option value="Club"></option>
+                        <option value="Other"></option>
+                    </datalist>
+                    <span id="task-tag-error" aria-live="assertive" role="alert"></span>
+                </div>
+
+                <span id="form-announcement" class="form-message" aria-live="polite" aria-atomic="true"></span>
+
+                <button type="submit">Submit</button>
+                <button type="button" id="cancel-btn" hidden>Cancel</button>
             </form>
         </section>
         <section id="settings" aria-labelledby="settings-heading">
@@ -46,5 +110,6 @@
         <p>Froches</p>
         <a href="https://github.com/froches2025" rel="noopener noreferrer">My Github</a>
     </footer>
+    <script type="module" src="scripts/main.js"></script>
 </body>
 </html>
