@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="styles/main.css">
+    <title>Campus Life Planner</title>
+</head>
+<body>
+    <a href="#main" class="skip-link">Skip to main content</a>
+    <header>
+        <h1>Campus Life Planner</h1>
+        <nav aria-label="Main navigation">
+            <ul>
+                <li><a href="#about">About</a></li>
+                <li><a href="#dashboard">Dashboard</a></li>
+                <li><a href="#records">Records</a></li>
+                <li><a href="#add-task">Add Task</a></li>
+                <li><a href="#settings">Settings</a></li>
+            </ul>
+        </nav>
+    </header>
+    <main id="main">
+        <section id="about" aria-labelledby="about-heading">
+            <h2 id="about-heading">About</h2>
+        </section>
+        <section id="dashboard" aria-labelledby="dashboard-heading">
+            <h2 id="dashboard-heading">Dashboard</h2>
+        </section>
+        <section id="records" aria-labelledby="records-heading">
+            <h2 id="records-heading">Records</h2>
+        </section>
+        <section id="add-task" aria-labelledby="add-task-heading">
+            <h2 id="add-task-heading">Add Task</h2>
+            <form action="submit" novalidate>
+                <label for="FIELD-ID">Field Name</label>
+                <input type="text" id="FIELD-ID" name="FIELD-NAME" autocomplete="off" aria-describedby="FIELD-ID-error" required />
+                <span id="FIELD-ID-error" class="error-message" aria-live="assertive" role="alert"></span>
+            </form>
+        </section>
+        <section id="settings" aria-labelledby="settings-heading">
+            <h2 id="settings-heading">Settings</h2>
+        </section>
+    </main>
+    <footer>
+        <p>Froches</p>
+        <a href="https://github.com/froches2025" rel="noopener noreferrer">My Github</a>
+    </footer>
+</body>
+</html>
