@@ -28,7 +28,62 @@
             <h2 id="dashboard-heading">Dashboard</h2>
         </section>
         <section id="records" aria-labelledby="records-heading">
-            <h2 id="records-heading">Records</h2>
+            <h2 id="records-heading" tabindex="-1">Records</h2>
+            
+            <!-- search and filter controls -->
+            <div class="records-controls">
+                <div class="search-group">
+                    <label for="search-input">Search tasks</label>
+                    <input
+                        type="text"
+                        id="search-input"
+                        placeholder="search by title or tag"
+                        aria-describedby="search-status"
+                    />
+                    <div id="search-status" class="search-status" aria-live="polite" role="status"></div>
+                </div>
+
+                <label for="case-insensitive-toggle" class="checkbox-label">
+                    <input
+                        type="checkbox"
+                        id="case-insensitive-toggle"
+                        checked
+                    />
+                    Case insensitive
+                </label>
+
+                <div class="sort-buttons">
+                    <button type="button" id="sort-date" class="sort-btn">Sort by Date</button>
+                    <button type="button" id="sort-title" class="sort-btn">Sort by Title</button>
+                    <button type="button" id="sort-duration" class="sort-btn">Sort by Duration</button>
+                </div>
+            </div>
+
+            <!-- desktop table view -->
+            <div class="records-table-wrapper">
+                <table id="records-table" class="records-table">
+                    <thead>
+                        <tr>
+                            <th scope="col">Title</th>
+                            <th scope="col">Due Date</th>
+                            <th scope="col">Duration</th>
+                            <th scope="col">Tag</th>
+                            <th scope="col">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="records-tbody">
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- mobile card view -->
+            <div id="records-mobile" class="records-mobile">
+            </div>
+
+            <!-- empty state message -->
+            <div id="empty-state" class="empty-state" hidden>
+                <p>No tasks yet. Add one to get started!</p>
+            </div>
         </section>
         <section id="add-task" aria-labelledby="add-task-heading">
             <h2 id="add-task-heading">Add Task</h2>

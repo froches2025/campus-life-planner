@@ -1,4 +1,17 @@
 import { validateTitle, validateDuration, validateDate, validateTag } from './validators.js';
+import { addRecord, updateRecord, deleteRecord, getRecords } from './state.js';
+import { filterRecords, highlight, compileRegex } from './search.js';
+
+// track whether we're editing an existing record
+let editingId = null;
+
+// track search and sort state
+let currentSearchPattern = '';
+let currentCaseInsensitive = true;
+let sortState = {
+  sortBy: null, // 'date', 'title', or 'duration'
+  sortDir: 'asc', // 'asc' or 'desc'
+};
 
 // get all the form elements we need to work with
 const form = document.getElementById('task-form');
@@ -7,6 +20,20 @@ const dateInput = document.getElementById('task-due-date');
 const durationInput = document.getElementById('task-duration');
 const tagInput = document.getElementById('task-tag');
 const formAnnouncement = document.getElementById('form-announcement');
+const submitBtn = form.querySelector('button[type="submit"]');
+const cancelBtn = document.getElementById('cancel-btn');
+
+// records section elements
+const recordsSection = document.getElementById('records');
+const searchInput = document.getElementById('search-input');
+const caseToggle = document.getElementById('case-insensitive-toggle');
+const searchStatus = document.getElementById('search-status');
+const sortButtons = document.querySelectorAll('.sort-btn');
+const recordsTable = document.getElementById('records-table');
+const recordsTbody = document.getElementById('records-tbody');
+const recordsMobile = document.getElementById('records-mobile');
+const emptyState = document.getElementById('empty-state');
+const recordsHeading = document.getElementById('records-heading');
 
 // map each input to its validator and error span
 const fieldConfig = {
@@ -54,9 +81,301 @@ function validateField(fieldId) {
   return result.valid;
 }
 
+// render records in desktop table view
+function renderTable(records, regex) {
+  recordsTbody.innerHTML = '';
+
+  records.forEach((record) => {
+    const row = document.createElement('tr');
+
+    // title cell - with highlighting
+    const titleCell = document.createElement('td');
+    titleCell.innerHTML = regex ? highlight(record.title, regex) : record.title;
+    row.appendChild(titleCell);
+
+    // due date cell
+    const dateCell = document.createElement('td');
+    dateCell.textContent = record.dueDate;
+    row.appendChild(dateCell);
+
+    // duration cell
+    const durationCell = document.createElement('td');
+    durationCell.textContent = `${record.duration} min`;
+    row.appendChild(durationCell);
+
+    // tag cell - with highlighting
+    const tagCell = document.createElement('td');
+    tagCell.innerHTML = regex ? highlight(record.tag, regex) : record.tag;
+    row.appendChild(tagCell);
+
+    // actions cell
+    const actionsCell = document.createElement('td');
+    const editBtn = document.createElement('button');
+    editBtn.type = 'button';
+    editBtn.textContent = 'Edit';
+    editBtn.setAttribute('aria-label', `Edit ${record.title}`);
+    editBtn.addEventListener('click', () => startEdit(record));
+
+    const deleteBtn = document.createElement('button');
+    deleteBtn.type = 'button';
+    deleteBtn.textContent = 'Delete';
+    deleteBtn.setAttribute('aria-label', `Delete ${record.title}`);
+    deleteBtn.addEventListener('click', () => confirmDelete(record.id, () => {
+      // after delete, move focus to next row or heading
+      const nextEditBtn = recordsTbody.querySelector('button[aria-label^="Edit"]');
+      if (nextEditBtn) {
+        nextEditBtn.focus();
+      } else {
+        recordsHeading.focus();
+      }
+    }));
+
+    const actionGroup = document.createElement('div');
+    actionGroup.className = 'record-actions';
+    actionGroup.appendChild(editBtn);
+    actionGroup.appendChild(deleteBtn);
+    actionsCell.appendChild(actionGroup);
+    row.appendChild(actionsCell);
+
+    recordsTbody.appendChild(row);
+  });
+}
+
+// render records in mobile card view
+function renderCards(records, regex) {
+  recordsMobile.innerHTML = '';
+
+  records.forEach((record) => {
+    const card = document.createElement('div');
+    card.className = 'record-card';
+
+    // title field
+    const titleField = document.createElement('div');
+    titleField.className = 'record-card-field';
+    const titleLabel = document.createElement('div');
+    titleLabel.className = 'record-card-label';
+    titleLabel.textContent = 'Title';
+    const titleValue = document.createElement('div');
+    titleValue.className = 'record-card-value';
+    titleValue.innerHTML = regex ? highlight(record.title, regex) : record.title;
+    titleField.appendChild(titleLabel);
+    titleField.appendChild(titleValue);
+    card.appendChild(titleField);
+
+    // due date field
+    const dateField = document.createElement('div');
+    dateField.className = 'record-card-field';
+    const dateLabel = document.createElement('div');
+    dateLabel.className = 'record-card-label';
+    dateLabel.textContent = 'Due Date';
+    const dateValue = document.createElement('div');
+    dateValue.className = 'record-card-value';
+    dateValue.textContent = record.dueDate;
+    dateField.appendChild(dateLabel);
+    dateField.appendChild(dateValue);
+    card.appendChild(dateField);
+
+    // duration field
+    const durationField = document.createElement('div');
+    durationField.className = 'record-card-field';
+    const durationLabel = document.createElement('div');
+    durationLabel.className = 'record-card-label';
+    durationLabel.textContent = 'Duration';
+    const durationValue = document.createElement('div');
+    durationValue.className = 'record-card-value';
+    durationValue.textContent = `${record.duration} min`;
+    durationField.appendChild(durationLabel);
+    durationField.appendChild(durationValue);
+    card.appendChild(durationField);
+
+    // tag field
+    const tagField = document.createElement('div');
+    tagField.className = 'record-card-field';
+    const tagLabel = document.createElement('div');
+    tagLabel.className = 'record-card-label';
+    tagLabel.textContent = 'Tag';
+    const tagValue = document.createElement('div');
+    tagValue.className = 'record-card-value';
+    tagValue.innerHTML = regex ? highlight(record.tag, regex) : record.tag;
+    tagField.appendChild(tagLabel);
+    tagField.appendChild(tagValue);
+    card.appendChild(tagField);
+
+    // actions
+    const editBtn = document.createElement('button');
+    editBtn.type = 'button';
+    editBtn.textContent = 'Edit';
+    editBtn.setAttribute('aria-label', `Edit ${record.title}`);
+    editBtn.addEventListener('click', () => startEdit(record));
+
+    const deleteBtn = document.createElement('button');
+    deleteBtn.type = 'button';
+    deleteBtn.textContent = 'Delete';
+    deleteBtn.setAttribute('aria-label', `Delete ${record.title}`);
+    deleteBtn.addEventListener('click', () => confirmDelete(record.id, () => {
+      // after delete, move focus to next row or heading
+      const nextEditBtn = recordsMobile.querySelector('button[aria-label^="Edit"]');
+      if (nextEditBtn) {
+        nextEditBtn.focus();
+      } else {
+        recordsHeading.focus();
+      }
+    }));
+
+    const actionGroup = document.createElement('div');
+    actionGroup.className = 'record-actions';
+    actionGroup.appendChild(editBtn);
+    actionGroup.appendChild(deleteBtn);
+    card.appendChild(actionGroup);
+
+    recordsMobile.appendChild(card);
+  });
+}
+
+// central orchestration: fetch, filter, sort, render
+function refreshRecordsView() {
+  // get all records from state
+  const allRecords = getRecords();
+
+  // filter by search pattern
+  const filtered = filterRecords(allRecords, currentSearchPattern, currentCaseInsensitive);
+
+  // sort the filtered results
+  let sorted = [...filtered];
+  if (sortState.sortBy) {
+    if (sortState.sortBy === 'date') {
+      // YYYY-MM-DD strings sort correctly with string comparison
+      sorted.sort((a, b) => {
+        const cmp = a.dueDate.localeCompare(b.dueDate);
+        return sortState.sortDir === 'asc' ? cmp : -cmp;
+      });
+    } else if (sortState.sortBy === 'title') {
+      sorted.sort((a, b) => {
+        const cmp = a.title.localeCompare(b.title);
+        return sortState.sortDir === 'asc' ? cmp : -cmp;
+      });
+    } else if (sortState.sortBy === 'duration') {
+      sorted.sort((a, b) => {
+        const cmp = a.duration - b.duration;
+        return sortState.sortDir === 'asc' ? cmp : -cmp;
+      });
+    }
+  }
+
+  // compile regex for highlighting (with g flag for .replace() in highlight())
+  let highlightRegex = null;
+  if (currentSearchPattern.trim()) {
+    highlightRegex = compileRegex(currentSearchPattern, currentCaseInsensitive);
+  }
+
+  // render both views with the same final array
+  renderTable(sorted, highlightRegex);
+  renderCards(sorted, highlightRegex);
+
+  // show/hide empty state
+  emptyState.hidden = sorted.length > 0;
+}
+
+// start editing a record - populate form and set state
+function startEdit(record) {
+  editingId = record.id;
+  titleInput.value = record.title;
+  dateInput.value = record.dueDate;
+  durationInput.value = record.duration;
+  tagInput.value = record.tag;
+
+  submitBtn.textContent = 'Update task';
+  cancelBtn.hidden = false;
+
+  // scroll form into view
+  form.scrollIntoView({ behavior: 'smooth' });
+  titleInput.focus();
+}
+
+// cancel editing - reset form and clear edit state
+function cancelEdit() {
+  editingId = null;
+  form.reset();
+  submitBtn.textContent = 'Add task';
+  cancelBtn.hidden = true;
+}
+
+// delete a record with confirmation
+function confirmDelete(recordId, onSuccess) {
+  if (window.confirm('Are you sure you want to delete this task?')) {
+    deleteRecord(recordId);
+    refreshRecordsView();
+    if (onSuccess) onSuccess();
+  }
+}
+
 // attach input listeners to all fields
 Object.values(fieldConfig).forEach(({ input }) => {
   input.addEventListener('input', () => validateField(input.id));
+});
+
+// search input handler
+searchInput.addEventListener('input', (e) => {
+  currentSearchPattern = e.target.value;
+
+  // validate regex pattern
+  const regex = compileRegex(currentSearchPattern, currentCaseInsensitive);
+  if (currentSearchPattern.trim() && !regex) {
+    searchStatus.textContent = 'Invalid search pattern';
+  } else {
+    searchStatus.textContent = '';
+  }
+
+  refreshRecordsView();
+});
+
+// case-insensitive toggle
+caseToggle.addEventListener('change', (e) => {
+  currentCaseInsensitive = e.target.checked;
+  refreshRecordsView();
+});
+
+// update sort button labels to show direction arrows
+function updateSortButtonLabels() {
+  sortButtons.forEach((btn) => {
+    const field = btn.id.replace('sort-', '');
+    // remove any existing arrow
+    btn.textContent = btn.textContent.replace(/ [↑↓]$/, '');
+    
+    // add arrow if this is the active column
+    if (sortState.sortBy === field) {
+      const arrow = sortState.sortDir === 'asc' ? ' ↑' : ' ↓';
+      btn.textContent += arrow;
+    }
+  });
+}
+
+// sort buttons
+sortButtons.forEach((btn) => {
+  btn.addEventListener('click', () => {
+    const sortBy = btn.id.replace('sort-', '');
+
+    // if clicking the same column, flip the direction
+    if (sortState.sortBy === sortBy) {
+      sortState.sortDir = sortState.sortDir === 'asc' ? 'desc' : 'asc';
+    } else {
+      // switching to a new column, start with ascending
+      sortState.sortBy = sortBy;
+      sortState.sortDir = 'asc';
+    }
+
+    // update button styling and labels
+    sortButtons.forEach((b) => {
+      b.classList.toggle('active', b.id.replace('sort-', '') === sortState.sortBy);
+    });
+    updateSortButtonLabels();
+    refreshRecordsView();
+  });
+});
+
+// cancel button handler
+cancelBtn.addEventListener('click', () => {
+  cancelEdit();
 });
 
 // handle form submission
@@ -81,8 +400,45 @@ form.addEventListener('submit', (e) => {
     formAnnouncement.textContent = 'Please fix the errors above';
     formAnnouncement.className = 'form-message form-message--error';
   } else {
-    formAnnouncement.textContent = 'Task added successfully!';
+    // build data object from form values
+    const data = {
+      title: titleInput.value,
+      dueDate: dateInput.value,
+      duration: parseFloat(durationInput.value),
+      tag: tagInput.value,
+    };
+
+    // save to state - either add new or update existing
+    if (editingId === null) {
+      addRecord(data);
+      formAnnouncement.textContent = 'Task added successfully!';
+    } else {
+      const result = updateRecord(editingId, data);
+      if (!result) {
+        formAnnouncement.textContent = 'This task no longer exists, it may have been deleted.';
+        formAnnouncement.className = 'form-message form-message--error';
+        cancelEdit();
+        refreshRecordsView();
+        return;
+      }
+      formAnnouncement.textContent = 'Task updated successfully!';
+      editingId = null;
+    }
+
     formAnnouncement.className = 'form-message form-message--success';
-    console.log('form is valid, ready to submit');
+
+    // reset form
+    form.reset();
+
+    // restore button states
+    submitBtn.textContent = 'Add task';
+    cancelBtn.hidden = true;
+
+    // refresh the records view
+    refreshRecordsView();
   }
 });
+
+// initialize records view on page load
+refreshRecordsView();
+updateSortButtonLabels();

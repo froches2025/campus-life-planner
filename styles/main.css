@@ -11,7 +11,8 @@
   --border-color: #d1d5db;
   --error-color: #dc2626;
   --focus-color: #006400;
-  
+  --hover-bg: #e5e7eb;
+
   /* extra colors i might use later */
   --bright-fern: #38b000;
   --radioactive-grass: #38b000;
@@ -202,6 +203,166 @@ button:hover {
   border-left: 4px solid var(--accent-color);
 }
 
+/* records section */
+.records-controls {
+  margin-bottom: var(--gap-large);
+  padding-bottom: var(--gap-large);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.search-group {
+  margin-bottom: var(--gap-large);
+}
+
+.search-group label {
+  display: block;
+  margin-bottom: var(--gap-small);
+}
+
+.search-group input {
+  width: 100%;
+  max-width: 400px;
+}
+
+.search-status {
+  margin-top: var(--gap-small);
+  font-size: var(--font-size-small);
+  color: var(--text-light);
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: var(--gap-small);
+  margin-bottom: var(--gap-large);
+  font-weight: normal;
+  cursor: pointer;
+}
+
+.checkbox-label input[type="checkbox"] {
+  width: auto;
+  margin: 0;
+  padding: 0;
+}
+
+.sort-buttons {
+  display: flex;
+  gap: var(--gap-small);
+  flex-wrap: wrap;
+}
+
+.sort-btn {
+  padding: var(--gap-medium) var(--gap-large);
+  background-color: var(--background-color);
+  color: var(--text-color);
+  border: 1px solid var(--border-color);
+  font-size: var(--font-size-small);
+  cursor: pointer;
+}
+
+.sort-btn:hover {
+  background-color: var(--hover-bg);
+}
+
+.sort-btn.active {
+  background-color: var(--primary-color);
+  color: var(--surface-color);
+  border-color: var(--primary-color);
+}
+
+/* table view */
+.records-table-wrapper {
+  overflow-x: auto;
+  margin-bottom: var(--gap-large);
+}
+
+.records-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--font-size-small);
+}
+
+.records-table thead {
+  background-color: var(--background-color);
+  border-bottom: 2px solid var(--border-color);
+}
+
+.records-table th {
+  padding: var(--gap-medium);
+  text-align: left;
+  font-weight: 600;
+  color: var(--text-color);
+}
+
+.records-table td {
+  padding: var(--gap-medium);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.records-table tbody tr:hover {
+  background-color: #f9fafb;
+}
+
+.record-actions {
+  display: flex;
+  gap: var(--gap-small);
+}
+
+.record-actions button {
+  padding: var(--gap-medium) var(--gap-large);
+  font-size: var(--font-size-small);
+  /* ensure 44px minimum touch target */
+  min-height: 44px;
+  min-width: 44px;
+}
+
+/* mobile card view - default (mobile-first) */
+.records-mobile {
+  display: block;
+}
+
+.records-table-wrapper {
+  display: none;
+}
+
+.record-card {
+  background-color: var(--surface-color);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  padding: var(--gap-large);
+  margin-bottom: var(--gap-large);
+}
+
+.record-card-field {
+  margin-bottom: var(--gap-medium);
+}
+
+.record-card-label {
+  font-weight: 600;
+  font-size: var(--font-size-small);
+  color: var(--text-light);
+}
+
+.record-card-value {
+  margin-top: var(--gap-small);
+  color: var(--text-color);
+}
+
+/* empty state */
+.empty-state {
+  text-align: center;
+  padding: var(--gap-large);
+  color: var(--text-light);
+}
+
+/* text highlighting - good contrast with black text on yellow background */
+mark {
+  background-color: #fef08a;
+  color: #000000;
+  padding: 0.125rem 0.25rem;
+  border-radius: var(--border-radius);
+}
+
 /* responsive stuff */
 
 /* tablets - bump up font size a bit */
@@ -212,6 +373,15 @@ button:hover {
   
   section {
     padding: var(--gap-large) calc(var(--gap-large) * 1.5);
+  }
+
+  /* switch to table view on tablet and up */
+  .records-table-wrapper {
+    display: block;
+  }
+
+  .records-mobile {
+    display: none;
   }
 }
 
