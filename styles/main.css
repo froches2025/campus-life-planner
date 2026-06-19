@@ -501,6 +501,127 @@ mark {
   font-weight: 500;
 }
 
+/* settings section */
+.settings-group {
+  margin-bottom: var(--gap-large);
+  padding-bottom: var(--gap-large);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.settings-group:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+
+.settings-group h3 {
+  margin-bottom: var(--gap-large);
+  font-size: var(--font-size-base);
+}
+
+fieldset.settings-group {
+  border: none;
+  padding: 0;
+}
+
+fieldset.settings-group legend {
+  font-weight: 500;
+  margin-bottom: var(--gap-medium);
+}
+
+.radio-label {
+  display: flex;
+  align-items: center;
+  gap: var(--gap-small);
+  margin-bottom: var(--gap-medium);
+  font-weight: normal;
+  cursor: pointer;
+}
+
+.radio-label input[type="radio"] {
+  width: auto;
+  margin: 0;
+  padding: 0;
+}
+
+/* tag list */
+.tag-list {
+  list-style: none;
+  margin-bottom: var(--gap-medium);
+}
+
+.tag-list-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--gap-small) var(--gap-medium);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  margin-bottom: var(--gap-small);
+  background-color: var(--background-color);
+}
+
+.tag-list-item button {
+  padding: 0.25rem 0.75rem;
+  font-size: var(--font-size-small);
+  background-color: transparent;
+  color: var(--error-color);
+  border: 1px solid var(--error-color);
+  min-height: 44px;
+  min-width: 44px;
+}
+
+.tag-list-item button:hover {
+  background-color: #fee2e2;
+}
+
+.tag-add-group {
+  display: flex;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: var(--gap-small);
+}
+
+.tag-add-group label {
+  width: 100%;
+  margin-bottom: 0;
+}
+
+.tag-add-group input {
+  flex: 1;
+  min-width: 160px;
+}
+
+.tag-add-group #new-tag-error {
+  width: 100%;
+  order: 3;
+}
+
+/* file import label */
+.file-label {
+  display: inline-block;
+  padding: var(--gap-medium) var(--gap-large);
+  background-color: var(--background-color);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  cursor: pointer;
+  font-weight: normal;
+  margin-bottom: var(--gap-medium);
+}
+
+.file-label:hover {
+  background-color: #e5e7eb;
+}
+
+.file-label input[type="file"] {
+  display: none;
+}
+
+#import-status {
+  font-size: var(--font-size-small);
+  min-height: 1.5em;
+}
+
 /* responsive stuff */
 
 /* tablets - bump up font size a bit */

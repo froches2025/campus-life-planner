@@ -209,6 +209,52 @@
         </section>
         <section id="settings" aria-labelledby="settings-heading">
             <h2 id="settings-heading">Settings</h2>
+
+            <!-- Duration display preference -->
+            <fieldset class="settings-group">
+                <legend>Duration display</legend>
+                <label class="radio-label">
+                    <input type="radio" name="duration-display" value="minutes" checked />
+                    Show as minutes
+                </label>
+                <label class="radio-label">
+                    <input type="radio" name="duration-display" value="hours" />
+                    Show as hours and minutes
+                </label>
+            </fieldset>
+
+            <!-- Tag management -->
+            <div class="settings-group">
+                <h3>Tags</h3>
+                <ul id="tag-list" class="tag-list" aria-label="Current tags"></ul>
+                <div class="tag-add-group">
+                    <label for="new-tag-input">New tag</label>
+                    <input
+                        type="text"
+                        id="new-tag-input"
+                        placeholder="e.g. Exercise"
+                        aria-describedby="new-tag-error"
+                    />
+                    <span id="new-tag-error" class="error-message" aria-live="assertive" role="alert"></span>
+                    <button type="button" id="add-tag-btn">Add tag</button>
+                </div>
+            </div>
+
+            <!-- Export -->
+            <div class="settings-group">
+                <h3>Export</h3>
+                <button type="button" id="export-btn">Download records as JSON</button>
+            </div>
+
+            <!-- Import -->
+            <div class="settings-group">
+                <h3>Import</h3>
+                <label class="file-label">
+                    Choose JSON file to import
+                    <input type="file" id="import-input" accept=".json" />
+                </label>
+                <div id="import-status" role="status" aria-live="polite"></div>
+            </div>
         </section>
     </main>
     <footer>

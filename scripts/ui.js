@@ -1,11 +1,13 @@
 import { validateTitle, validateDuration, validateDate, validateTag } from './validators.js';
-import { addRecord, updateRecord, deleteRecord, getRecords } from './state.js';
+import { addRecord, updateRecord, deleteRecord, getRecords, importRecords } from './state.js';
 import { filterRecords, highlight, compileRegex } from './search.js';
 import { getTotalCount, getTotalDurationMinutes, formatDuration, getTopTag, getLast7DaysTrend, getUpcomingWeekMinutes } from './stats.js';
+import { loadSettings, saveSettings, hasStoredRecords } from './storage.js';
 
 // track whether we're editing an existing record
 let editingId = null;
-let weeklyCapHours = null;
+let appSettings = loadSettings();
+let weeklyCapHours = appSettings.weeklyCapHours;
 
 // track search and sort state
 let currentSearchPattern = '';
@@ -41,6 +43,16 @@ const recordsHeading = document.getElementById('records-heading');
 const capInput = document.getElementById('cap-input');
 const capStatusPolite = document.getElementById('cap-status-polite');
 const capStatusAssertive = document.getElementById('cap-status-assertive');
+
+// settings elements
+const durationRadios = document.querySelectorAll('input[name="duration-display"]');
+const tagList = document.getElementById('tag-list');
+const newTagInput = document.getElementById('new-tag-input');
+const newTagError = document.getElementById('new-tag-error');
+const addTagBtn = document.getElementById('add-tag-btn');
+const exportBtn = document.getElementById('export-btn');
+const importInput = document.getElementById('import-input');
+const importStatus = document.getElementById('import-status');
 
 // map each input to its validator and error span
 const fieldConfig = {
@@ -88,6 +100,10 @@ function validateField(fieldId) {
   return result.valid;
 }
 
+function displayDuration(minutes) {
+  return appSettings.durationDisplay === 'hours' ? formatDuration(minutes) : `${minutes} min`;
+}
+
 // render records in desktop table view
 function renderTable(records, regex) {
   recordsTbody.innerHTML = '';
@@ -107,7 +123,7 @@ function renderTable(records, regex) {
 
     // duration cell
     const durationCell = document.createElement('td');
-    durationCell.textContent = `${record.duration} min`;
+    durationCell.textContent = displayDuration(record.duration);
     row.appendChild(durationCell);
 
     // tag cell - with highlighting
@@ -190,7 +206,7 @@ function renderCards(records, regex) {
     durationLabel.textContent = 'Duration';
     const durationValue = document.createElement('div');
     durationValue.className = 'record-card-value';
-    durationValue.textContent = `${record.duration} min`;
+    durationValue.textContent = displayDuration(record.duration);
     durationField.appendChild(durationLabel);
     durationField.appendChild(durationValue);
     card.appendChild(durationField);
@@ -409,6 +425,42 @@ function confirmDelete(recordId, onSuccess) {
   }
 }
 
+function renderTagList() {
+  tagList.innerHTML = '';
+  appSettings.tags.forEach(tag => {
+    const li = document.createElement('li');
+    li.className = 'tag-list-item';
+
+    const name = document.createElement('span');
+    name.textContent = tag;
+
+    const removeBtn = document.createElement('button');
+    removeBtn.type = 'button';
+    removeBtn.textContent = 'Remove';
+    removeBtn.setAttribute('aria-label', `Remove tag ${tag}`);
+    removeBtn.addEventListener('click', () => {
+      appSettings.tags = appSettings.tags.filter(t => t !== tag);
+      saveSettings(appSettings);
+      renderTagList();
+      updateTagDatalist();
+    });
+
+    li.appendChild(name);
+    li.appendChild(removeBtn);
+    tagList.appendChild(li);
+  });
+}
+
+function updateTagDatalist() {
+  const datalist = document.getElementById('tag-suggestions');
+  datalist.innerHTML = '';
+  appSettings.tags.forEach(tag => {
+    const option = document.createElement('option');
+    option.value = tag;
+    datalist.appendChild(option);
+  });
+}
+
 // attach input listeners to all fields
 Object.values(fieldConfig).forEach(({ input }) => {
   input.addEventListener('input', () => validateField(input.id));
@@ -543,9 +595,129 @@ form.addEventListener('submit', (e) => {
 capInput.addEventListener('input', (e) => {
   const val = parseFloat(e.target.value);
   weeklyCapHours = isNaN(val) || val < 0 ? null : val;
+  appSettings.weeklyCapHours = weeklyCapHours;
+  saveSettings(appSettings);
   refreshCapStatus(getUpcomingWeekMinutes(getRecords()));
 });
 
-// initialize records view on page load
+// duration display radio handler
+durationRadios.forEach(radio => {
+  radio.addEventListener('change', () => {
+    appSettings.durationDisplay = radio.value;
+    saveSettings(appSettings);
+    refreshRecordsView();
+  });
+});
+
+// add tag handler
+addTagBtn.addEventListener('click', () => {
+  const value = newTagInput.value.trim();
+  const result = validateTag(value);
+  if (!result.valid) {
+    newTagError.textContent = result.message;
+    return;
+  }
+  if (appSettings.tags.includes(value)) {
+    newTagError.textContent = 'Tag already exists.';
+    return;
+  }
+  newTagError.textContent = '';
+  appSettings.tags.push(value);
+  saveSettings(appSettings);
+  newTagInput.value = '';
+  renderTagList();
+  updateTagDatalist();
+});
+
+// allow pressing Enter in the new tag input
+newTagInput.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') {
+    e.preventDefault();
+    addTagBtn.click();
+  }
+});
+
+// export handler
+exportBtn.addEventListener('click', () => {
+  const data = JSON.stringify(getRecords(), null, 2);
+  const blob = new Blob([data], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'campus-life-planner-export.json';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+});
+
+// import handler
+importInput.addEventListener('change', (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = (event) => {
+    let parsed;
+    try {
+      parsed = JSON.parse(event.target.result);
+    } catch {
+      importStatus.textContent = 'Invalid JSON: file could not be parsed.';
+      importInput.value = '';
+      return;
+    }
+
+    if (!Array.isArray(parsed)) {
+      importStatus.textContent = 'Invalid format: expected an array of records.';
+      importInput.value = '';
+      return;
+    }
+
+    for (let i = 0; i < parsed.length; i++) {
+      const r = parsed[i];
+      const valid =
+        typeof r.id === 'string' &&
+        typeof r.title === 'string' && r.title.length > 0 &&
+        typeof r.dueDate === 'string' && validateDate(r.dueDate).valid &&
+        typeof r.duration === 'number' && !isNaN(r.duration) && r.duration >= 0 &&
+        typeof r.tag === 'string' && r.tag.length > 0 &&
+        typeof r.createdAt === 'string' &&
+        typeof r.updatedAt === 'string';
+      if (!valid) {
+        importStatus.textContent = `Record ${i} is missing required fields or has invalid types.`;
+        importInput.value = '';
+        return;
+      }
+    }
+
+    importRecords(parsed);
+    refreshRecordsView();
+    importStatus.textContent = `Successfully imported ${parsed.length} record${parsed.length === 1 ? '' : 's'}.`;
+    importInput.value = '';
+  };
+
+  reader.readAsText(file);
+});
+
+// initialize on page load
+durationRadios.forEach(radio => {
+  radio.checked = radio.value === appSettings.durationDisplay;
+});
+if (appSettings.weeklyCapHours !== null) {
+  capInput.value = appSettings.weeklyCapHours;
+}
+renderTagList();
+updateTagDatalist();
+
+if (!hasStoredRecords()) {
+  fetch('./seed.json')
+    .then(r => r.json())
+    .then(data => {
+      importRecords(data);
+      refreshRecordsView();
+    })
+    .catch(() => {});
+}
+
 refreshRecordsView();
 updateSortButtonLabels();
