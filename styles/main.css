@@ -84,12 +84,31 @@ header {
   background-color: var(--surface-color);
   color: var(--text-color);
   border-bottom: 1px solid var(--border-color);
+  position: relative;
+}
+
+/* mobile nav: hidden by default, drops down when .open */
+header nav {
+  display: none;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background-color: var(--surface-color);
+  border-bottom: 1px solid var(--border-color);
+  padding: var(--gap-medium) var(--gap-large);
+  z-index: 50;
+}
+
+header nav.open {
+  display: block;
 }
 
 header nav ul {
   display: flex;
+  flex-direction: column;
   list-style: none;
-  gap: var(--gap-large);
+  gap: var(--gap-medium);
   margin: 0;
   padding: 0;
 }
@@ -103,6 +122,42 @@ header nav a {
 
 header nav a:hover {
   color: var(--primary-color);
+}
+
+/* hamburger button */
+.menu-btn {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 5px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: var(--gap-small);
+  min-width: 44px;
+  min-height: 44px;
+}
+
+.menu-btn .bar {
+  display: block;
+  width: 22px;
+  height: 2px;
+  background-color: var(--text-color);
+  border-radius: 2px;
+  transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+.menu-btn[aria-expanded="true"] .bar:nth-child(1) {
+  transform: translateY(7px) rotate(45deg);
+}
+
+.menu-btn[aria-expanded="true"] .bar:nth-child(2) {
+  opacity: 0;
+}
+
+.menu-btn[aria-expanded="true"] .bar:nth-child(3) {
+  transform: translateY(-7px) rotate(-45deg);
 }
 
 /* make everything keyboard accessible */
@@ -332,6 +387,8 @@ button:hover {
 .records-table td {
   padding: var(--gap-medium);
   border-bottom: 1px solid var(--border-color);
+  word-break: break-word;
+  max-width: 300px;
 }
 
 .records-table tbody tr:hover {
@@ -386,6 +443,7 @@ button:hover {
 .record-card-value {
   margin-top: var(--gap-small);
   color: var(--text-color);
+  word-break: break-word;
 }
 
 /* empty state */
@@ -664,7 +722,7 @@ fieldset.settings-group legend {
   body {
     font-size: var(--font-size-large);
   }
-  
+
   section {
     padding: var(--gap-large) calc(var(--gap-large) * 1.5);
   }
@@ -676,6 +734,24 @@ fieldset.settings-group legend {
 
   .records-mobile {
     display: none;
+  }
+
+  /* restore horizontal nav, hide hamburger */
+  .menu-btn {
+    display: none;
+  }
+
+  header nav {
+    display: block;
+    position: static;
+    background: none;
+    border: none;
+    padding: 0;
+  }
+
+  header nav ul {
+    flex-direction: row;
+    gap: var(--gap-large);
   }
 }
 

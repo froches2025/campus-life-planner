@@ -734,3 +734,21 @@ if (!hasStoredRecords()) {
 
 refreshRecordsView();
 updateSortButtonLabels();
+
+// mobile nav toggle
+const menuBtn = document.querySelector('.menu-btn');
+const mainNav = document.getElementById('main-nav');
+
+menuBtn.addEventListener('click', () => {
+  const isOpen = mainNav.classList.toggle('open');
+  menuBtn.setAttribute('aria-expanded', String(isOpen));
+  menuBtn.setAttribute('aria-label', isOpen ? 'Close navigation' : 'Open navigation');
+});
+
+mainNav.querySelectorAll('a').forEach(link => {
+  link.addEventListener('click', () => {
+    mainNav.classList.remove('open');
+    menuBtn.setAttribute('aria-expanded', 'false');
+    menuBtn.setAttribute('aria-label', 'Open navigation');
+  });
+});
