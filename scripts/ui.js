@@ -51,6 +51,7 @@ const newTagInput = document.getElementById('new-tag-input');
 const newTagError = document.getElementById('new-tag-error');
 const addTagBtn = document.getElementById('add-tag-btn');
 const exportBtn = document.getElementById('export-btn');
+const importBtn = document.getElementById('import-btn');
 const importInput = document.getElementById('import-input');
 const importStatus = document.getElementById('import-status');
 
@@ -386,8 +387,15 @@ function refreshRecordsView() {
   renderTable(sorted, highlightRegex);
   renderCards(sorted, highlightRegex);
 
-  // show/hide empty state
-  emptyState.hidden = sorted.length > 0;
+  // show/hide empty state with context-aware message
+  if (sorted.length === 0) {
+    emptyState.hidden = false;
+    emptyState.querySelector('p').textContent = currentSearchPattern.trim()
+      ? 'No tasks match your search.'
+      : 'No tasks yet. Add one to get started!';
+  } else {
+    emptyState.hidden = true;
+  }
 
   refreshDashboard();
 }
@@ -474,8 +482,10 @@ searchInput.addEventListener('input', (e) => {
   const regex = compileRegex(currentSearchPattern, currentCaseInsensitive);
   if (currentSearchPattern.trim() && !regex) {
     searchStatus.textContent = 'Invalid search pattern';
+    searchStatus.classList.add('search-status--error');
   } else {
     searchStatus.textContent = '';
+    searchStatus.classList.remove('search-status--error');
   }
 
   refreshRecordsView();
@@ -636,6 +646,9 @@ newTagInput.addEventListener('keydown', (e) => {
     addTagBtn.click();
   }
 });
+
+// import button triggers the hidden file input
+importBtn.addEventListener('click', () => importInput.click());
 
 // export handler
 exportBtn.addEventListener('click', () => {

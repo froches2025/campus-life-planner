@@ -23,6 +23,34 @@
     <main id="main">
         <section id="about" aria-labelledby="about-heading">
             <h2 id="about-heading">About</h2>
+            <p>
+                Campus Life Planner is a task management app built for students who want
+                a simple way to keep track of everything they have going on. Beyond
+                assignments and deadlines, it covers the full range of student life:
+                meals, gym sessions, club meetings, personal errands, and anything else
+                that takes up your time. The goal is to give you a clear picture of your
+                week so you can plan more intentionally and avoid the feeling of constantly
+                playing catch-up.
+            </p>
+            <p>
+                The app lets you log tasks with a title, due date, duration, and tag, then
+                search and sort them however you need. The dashboard summarises your workload
+                at a glance, including a 7-day activity trend and a weekly hour cap you can
+                set yourself. Everything is saved locally in your browser, so your data stays
+                on your device.
+            </p>
+            <ul class="about-links">
+                <li>
+                    <a href="https://github.com/froches2025" rel="noopener noreferrer">
+                        GitHub -> froches2025
+                    </a>
+                </li>
+                <li>
+                    <a href="mailto:f.michael@alustudent.com">
+                        f.michael@alustudent.com
+                    </a>
+                </li>
+            </ul>
         </section>
         <section id="dashboard" aria-labelledby="dashboard-heading">
             <h2 id="dashboard-heading">Dashboard</h2>
@@ -249,10 +277,15 @@
             <!-- Import -->
             <div class="settings-group">
                 <h3>Import</h3>
-                <label class="file-label">
-                    Choose JSON file to import
-                    <input type="file" id="import-input" accept=".json" />
-                </label>
+                <button type="button" id="import-btn">Choose JSON file to import</button>
+                <input
+                    type="file"
+                    id="import-input"
+                    accept=".json"
+                    class="visually-hidden"
+                    tabindex="-1"
+                    aria-hidden="true"
+                />
                 <div id="import-status" role="status" aria-live="polite"></div>
             </div>
         </section>
