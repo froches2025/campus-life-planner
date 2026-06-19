@@ -1,11 +1,21 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta property="og:title" content="Campus Life Planner">
+    <meta property="og:description"
+        content="A responsive task planner for students — track assignments, activities, and time with smart search and a weekly hour cap.">
+    <meta property="og:image" content="https://froches2025.github.io/campus-life-planner/assets/og-image.png">
+    <meta property="og:url" content="https://froches2025.github.io/campus-life-planner/">
+    <meta property="og:type" content="website">
+
     <link rel="stylesheet" href="styles/main.css">
     <title>Campus Life Planner</title>
 </head>
+
 <body>
     <a href="#main" class="skip-link">Skip to main content</a>
     <header>
@@ -79,32 +89,16 @@
                 </div>
             </div>
 
-            <div
-                id="trend-chart"
-                class="trend-chart"
-                role="img"
-                aria-label="No tasks recorded yet"
-            ></div>
+            <div id="trend-chart" class="trend-chart" role="img" aria-label="No tasks recorded yet"></div>
 
             <div class="cap-section">
                 <h3>Weekly Hour Cap</h3>
                 <div class="form-group">
                     <label for="cap-input">Weekly target (hours)</label>
-                    <input
-                        type="number"
-                        id="cap-input"
-                        min="0"
-                        step="0.5"
-                        placeholder="e.g. 40"
-                    />
+                    <input type="number" id="cap-input" min="0" step="0.5" placeholder="e.g. 40" />
                 </div>
                 <div id="cap-progress-wrap" class="cap-progress-wrap" hidden>
-                    <progress
-                        id="cap-progress"
-                        max="100"
-                        value="0"
-                        aria-label="Weekly hours progress"
-                    ></progress>
+                    <progress id="cap-progress" max="100" value="0" aria-label="Weekly hours progress"></progress>
                 </div>
                 <div id="cap-status-polite" aria-live="polite" role="status"></div>
                 <div id="cap-status-assertive" aria-live="assertive" role="alert"></div>
@@ -112,26 +106,18 @@
         </section>
         <section id="records" aria-labelledby="records-heading">
             <h2 id="records-heading" tabindex="-1">Records</h2>
-            
+
             <!-- search and filter controls -->
             <div class="records-controls">
                 <div class="search-group">
                     <label for="search-input">Search tasks</label>
-                    <input
-                        type="text"
-                        id="search-input"
-                        placeholder="search by title or tag"
-                        aria-describedby="search-status"
-                    />
+                    <input type="text" id="search-input" placeholder="search by title or tag"
+                        aria-describedby="search-status" />
                     <div id="search-status" class="search-status" aria-live="polite" role="status"></div>
                 </div>
 
                 <label for="case-insensitive-toggle" class="checkbox-label">
-                    <input
-                        type="checkbox"
-                        id="case-insensitive-toggle"
-                        checked
-                    />
+                    <input type="checkbox" id="case-insensitive-toggle" checked />
                     Case insensitive
                 </label>
 
@@ -173,56 +159,29 @@
             <form id="task-form" novalidate>
                 <div class="form-group">
                     <label for="task-title">Title</label>
-                    <input
-                        type="text"
-                        id="task-title"
-                        name="title"
-                        aria-invalid="false"
-                        aria-describedby="task-title-error"
-                        required
-                    />
+                    <input type="text" id="task-title" name="title" aria-invalid="false"
+                        aria-describedby="task-title-error" required />
                     <span id="task-title-error" aria-live="assertive" role="alert"></span>
                 </div>
 
                 <div class="form-group">
                     <label for="task-due-date">Due Date</label>
-                    <input
-                        type="text"
-                        id="task-due-date"
-                        name="dueDate"
-                        placeholder="YYYY-MM-DD"
-                        aria-invalid="false"
-                        aria-describedby="task-due-date-error"
-                        required
-                    />
+                    <input type="text" id="task-due-date" name="dueDate" placeholder="YYYY-MM-DD" aria-invalid="false"
+                        aria-describedby="task-due-date-error" required />
                     <span id="task-due-date-error" aria-live="assertive" role="alert"></span>
                 </div>
 
                 <div class="form-group">
                     <label for="task-duration">Duration</label>
-                    <input
-                        type="text"
-                        id="task-duration"
-                        name="duration"
-                        placeholder="minutes"
-                        aria-invalid="false"
-                        aria-describedby="task-duration-error"
-                        required
-                    />
+                    <input type="text" id="task-duration" name="duration" placeholder="minutes" aria-invalid="false"
+                        aria-describedby="task-duration-error" required />
                     <span id="task-duration-error" aria-live="assertive" role="alert"></span>
                 </div>
 
                 <div class="form-group">
                     <label for="task-tag">Tag</label>
-                    <input
-                        type="text"
-                        id="task-tag"
-                        name="tag"
-                        list="tag-suggestions"
-                        aria-invalid="false"
-                        aria-describedby="task-tag-error"
-                        required
-                    />
+                    <input type="text" id="task-tag" name="tag" list="tag-suggestions" aria-invalid="false"
+                        aria-describedby="task-tag-error" required />
                     <datalist id="tag-suggestions">
                         <option value="Academics"></option>
                         <option value="Social"></option>
@@ -262,12 +221,8 @@
                 <ul id="tag-list" class="tag-list" aria-label="Current tags"></ul>
                 <div class="tag-add-group">
                     <label for="new-tag-input">New tag</label>
-                    <input
-                        type="text"
-                        id="new-tag-input"
-                        placeholder="e.g. Exercise"
-                        aria-describedby="new-tag-error"
-                    />
+                    <input type="text" id="new-tag-input" placeholder="e.g. Exercise"
+                        aria-describedby="new-tag-error" />
                     <span id="new-tag-error" class="error-message" aria-live="assertive" role="alert"></span>
                     <button type="button" id="add-tag-btn">Add tag</button>
                 </div>
@@ -283,14 +238,8 @@
             <div class="settings-group">
                 <h3>Import</h3>
                 <button type="button" id="import-btn">Choose JSON file to import</button>
-                <input
-                    type="file"
-                    id="import-input"
-                    accept=".json"
-                    class="visually-hidden"
-                    tabindex="-1"
-                    aria-hidden="true"
-                />
+                <input type="file" id="import-input" accept=".json" class="visually-hidden" tabindex="-1"
+                    aria-hidden="true" />
                 <div id="import-status" role="status" aria-live="polite"></div>
             </div>
         </section>
@@ -301,4 +250,5 @@
     </footer>
     <script type="module" src="scripts/main.js"></script>
 </body>
+
 </html>
