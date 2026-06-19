@@ -151,7 +151,7 @@ Deployed on GitHub Pages: [https://froches2025.github.io/campus-life-planner/](h
 
 ## Demo Video
 
-[Link to be added]
+[https://youtu.be/QDrEQYXTc2w](https://youtu.be/QDrEQYXTc2w)
 
 ## Developer
 
