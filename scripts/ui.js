@@ -1,9 +1,11 @@
 import { validateTitle, validateDuration, validateDate, validateTag } from './validators.js';
 import { addRecord, updateRecord, deleteRecord, getRecords } from './state.js';
 import { filterRecords, highlight, compileRegex } from './search.js';
+import { getTotalCount, getTotalDurationMinutes, formatDuration, getTopTag, getLast7DaysTrend, getUpcomingWeekMinutes } from './stats.js';
 
 // track whether we're editing an existing record
 let editingId = null;
+let weeklyCapHours = null;
 
 // track search and sort state
 let currentSearchPattern = '';
@@ -34,6 +36,11 @@ const recordsTbody = document.getElementById('records-tbody');
 const recordsMobile = document.getElementById('records-mobile');
 const emptyState = document.getElementById('empty-state');
 const recordsHeading = document.getElementById('records-heading');
+
+// dashboard elements
+const capInput = document.getElementById('cap-input');
+const capStatusPolite = document.getElementById('cap-status-polite');
+const capStatusAssertive = document.getElementById('cap-status-assertive');
 
 // map each input to its validator and error span
 const fieldConfig = {
@@ -232,6 +239,97 @@ function renderCards(records, regex) {
   });
 }
 
+function renderTrendChart(trend) {
+  const chart = document.getElementById('trend-chart');
+  const maxCount = Math.max(...trend.map(d => d.count), 1);
+  const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+  const ariaLabel = `Tasks created per day, last 7 days: ${trend
+    .map(d => `${dayNames[new Date(d.date + 'T12:00:00').getDay()]} ${d.count}`)
+    .join(', ')}`;
+  chart.setAttribute('aria-label', ariaLabel);
+  chart.innerHTML = '';
+
+  trend.forEach(d => {
+    const dayName = dayNames[new Date(d.date + 'T12:00:00').getDay()];
+    const heightPct = maxCount > 0 ? Math.round((d.count / maxCount) * 100) : 0;
+
+    const col = document.createElement('div');
+    col.className = 'trend-col';
+
+    const barArea = document.createElement('div');
+    barArea.className = 'trend-bar-area';
+
+    const bar = document.createElement('div');
+    bar.className = d.count === 0 ? 'trend-bar trend-bar--empty' : 'trend-bar';
+    bar.style.height = d.count === 0 ? '2px' : `${heightPct}%`;
+    barArea.appendChild(bar);
+
+    const countEl = document.createElement('div');
+    countEl.className = 'trend-count';
+    countEl.textContent = d.count;
+
+    const labelEl = document.createElement('div');
+    labelEl.className = 'trend-label';
+    labelEl.textContent = dayName;
+
+    col.appendChild(barArea);
+    col.appendChild(countEl);
+    col.appendChild(labelEl);
+    chart.appendChild(col);
+  });
+}
+
+function refreshCapStatus(upcomingMinutes) {
+  const progressWrap = document.getElementById('cap-progress-wrap');
+  const progressBar = document.getElementById('cap-progress');
+
+  if (weeklyCapHours === null) {
+    capStatusPolite.textContent = '';
+    capStatusAssertive.textContent = '';
+    progressWrap.hidden = true;
+    return;
+  }
+
+  const capMinutes = weeklyCapHours * 60;
+  const upcomingFormatted = formatDuration(upcomingMinutes);
+  const capFormatted = formatDuration(capMinutes);
+  const pct = capMinutes > 0 ? Math.min(Math.round((upcomingMinutes / capMinutes) * 100), 100) : 0;
+
+  progressWrap.hidden = false;
+  progressBar.value = pct;
+  progressBar.classList.toggle('over-cap', upcomingMinutes > capMinutes);
+
+  if (upcomingMinutes > capMinutes) {
+    capStatusPolite.textContent = '';
+    capStatusPolite.className = '';
+    const overByPct = Math.round((upcomingMinutes / capMinutes) * 100);
+    capStatusAssertive.textContent = `Warning: Over cap by ${overByPct}%: ${upcomingFormatted} scheduled, cap is ${capFormatted}.`;
+    capStatusAssertive.className = 'cap-over';
+  } else {
+    capStatusAssertive.textContent = '';
+    capStatusAssertive.className = '';
+    capStatusPolite.textContent = `On track: ${upcomingFormatted} of ${capFormatted} scheduled this week.`;
+    capStatusPolite.className = 'cap-under';
+  }
+}
+
+function refreshDashboard() {
+  const records = getRecords();
+  const upcomingMins = getUpcomingWeekMinutes(records);
+
+  document.getElementById('stat-total-count').textContent = getTotalCount(records);
+  document.getElementById('stat-total-duration').textContent = formatDuration(getTotalDurationMinutes(records));
+
+  const topTag = getTopTag(records);
+  document.getElementById('stat-top-tag').textContent = topTag ?? '—';
+
+  document.getElementById('stat-upcoming').textContent = formatDuration(upcomingMins);
+
+  renderTrendChart(getLast7DaysTrend(records));
+  refreshCapStatus(upcomingMins);
+}
+
 // central orchestration: fetch, filter, sort, render
 function refreshRecordsView() {
   // get all records from state
@@ -274,6 +372,8 @@ function refreshRecordsView() {
 
   // show/hide empty state
   emptyState.hidden = sorted.length > 0;
+
+  refreshDashboard();
 }
 
 // start editing a record - populate form and set state
@@ -437,6 +537,13 @@ form.addEventListener('submit', (e) => {
     // refresh the records view
     refreshRecordsView();
   }
+});
+
+// cap input handler
+capInput.addEventListener('input', (e) => {
+  const val = parseFloat(e.target.value);
+  weeklyCapHours = isNaN(val) || val < 0 ? null : val;
+  refreshCapStatus(getUpcomingWeekMinutes(getRecords()));
 });
 
 // initialize records view on page load

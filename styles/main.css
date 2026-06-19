@@ -363,6 +363,144 @@ mark {
   border-radius: var(--border-radius);
 }
 
+/* dashboard stat cards */
+.stat-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: var(--gap-medium);
+  margin-bottom: var(--gap-large);
+}
+
+.stat-card {
+  background-color: var(--background-color);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  padding: var(--gap-large);
+  text-align: center;
+}
+
+.stat-label {
+  font-size: var(--font-size-small);
+  color: var(--text-light);
+  margin-bottom: var(--gap-small);
+}
+
+.stat-value {
+  font-size: var(--font-size-large);
+  font-weight: 600;
+  color: var(--primary-color);
+}
+
+/* trend chart */
+.trend-chart {
+  display: flex;
+  gap: var(--gap-small);
+  margin-bottom: var(--gap-large);
+  padding-bottom: var(--gap-medium);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.trend-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.trend-bar-area {
+  width: 100%;
+  height: 80px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.trend-bar {
+  width: 70%;
+  background-color: var(--primary-color);
+  border-radius: var(--border-radius) var(--border-radius) 0 0;
+}
+
+.trend-bar--empty {
+  background-color: var(--border-color);
+}
+
+.trend-count {
+  font-size: var(--font-size-small);
+  font-weight: 600;
+  color: var(--text-color);
+  margin-top: var(--gap-small);
+}
+
+.trend-label {
+  font-size: var(--font-size-small);
+  color: var(--text-light);
+  margin-top: 2px;
+}
+
+/* cap section */
+.cap-section {
+  border-top: 1px solid var(--border-color);
+  padding-top: var(--gap-large);
+}
+
+.cap-section h3 {
+  margin-bottom: var(--gap-large);
+  font-size: var(--font-size-base);
+}
+
+.cap-section input[type="number"] {
+  max-width: 200px;
+}
+
+.cap-progress-wrap {
+  margin: var(--gap-medium) 0;
+}
+
+.cap-progress-wrap progress {
+  width: 100%;
+  height: 8px;
+  -webkit-appearance: none;
+  appearance: none;
+  border: none;
+  border-radius: var(--border-radius);
+  background-color: var(--border-color);
+}
+
+.cap-progress-wrap progress::-webkit-progress-bar {
+  background-color: var(--border-color);
+  border-radius: var(--border-radius);
+}
+
+.cap-progress-wrap progress::-webkit-progress-value {
+  background-color: var(--primary-color);
+  border-radius: var(--border-radius);
+}
+
+.cap-progress-wrap progress.over-cap::-webkit-progress-value {
+  background-color: var(--error-color);
+}
+
+.cap-progress-wrap progress::-moz-progress-bar {
+  background-color: var(--primary-color);
+  border-radius: var(--border-radius);
+}
+
+.cap-progress-wrap progress.over-cap::-moz-progress-bar {
+  background-color: var(--error-color);
+}
+
+.cap-under {
+  color: var(--primary-color);
+  font-size: var(--font-size-small);
+}
+
+.cap-over {
+  color: var(--error-color);
+  font-size: var(--font-size-small);
+  font-weight: 500;
+}
+
 /* responsive stuff */
 
 /* tablets - bump up font size a bit */
